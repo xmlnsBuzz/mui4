@@ -7,12 +7,13 @@ import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import Button from '@material-ui/core/Button';
 import { Link } from 'react-router-dom';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+// import theme from './Theme';
 
 
 
 import logo from '../../assets/logo.svg';
-// import theme from './Theme'
-
 function ElevationScroll ( props ) {
   const { children } = props;
   const trigger = useScrollTrigger( {
@@ -54,18 +55,56 @@ const useStyles = makeStyles( theme => ( {
     marginLeft: '50px',
     marginRight: '25px',
     height: '45px',
+  },
+  menu: {
+    backgroundColor: theme.palette.common.orange,
+    color: theme.palette.common.subMenuBackgroundColor,
+    borderRadius: '10px'
+  },
+  menuItem: {
+    ...theme.typography.tab,
+    opacity: 0.5,
+    // backgroundColor: 'blue',
+    "&:hover": {
+      opacity: 1
+    }/* NOTE JSS에서의 SASS nesting사용법 참조( https://crmrelease.tistory.com/89 ) */
   }
 } ) );
 
 export default function Header ( props ) {
   const classes = useStyles();
-
   const [ value, setValue ] = useState( 0 );
+  const [ anchorEl, setAnchorEl ] = useState( null );
+  const [ open, setOpen ] = useState( false );
+  const [ selectedIndex, setSelectedIndex ] = useState( 0 );
 
   const handleChange = ( e, value ) => {
     setValue( value );
     /* NOTE Click할 때 아래에 줄 생기게 만든다 */
   };
+
+  const handlePopup = ( e ) => {
+    setAnchorEl( e.currentTarget );
+    setOpen( true );
+  };/* NOTE 팝업메뉴 설정(handlePopup) */
+
+  const handleMenuItemClick = ( e, i ) => {
+    setAnchorEl( null )
+    setOpen(false)
+  }
+  const handleClose = ( e ) => {
+    setAnchorEl( null );
+    setOpen( false );
+  };
+
+  const menuOptions = [
+    { name: "Services", link: "/services" },
+    {name: "Custom Software Development", link: "/customsoftware"},
+    {name: "Mobile Apps", link: "/mobileapps"},
+    {name: "WebSites Development", link: "/websites"},
+  ]
+/* NOTE 아래의 <MenuItem>을 단순화하기 위해 필요한 array */
+
 
   useEffect( () => {
     if ( window.location.pathname === "/" && value !== 0 ) {
@@ -115,16 +154,97 @@ export default function Header ( props ) {
               className={classes.tabContainer}
               indicatorColor="primary"
             >
-              <Tab className={classes.tab} component={Link} to="/" label="Home" />
-              <Tab className={classes.tab} component={Link} to="/revolution" label="The Revolution" />
-              <Tab className={classes.tab} component={Link} to="/services" label="Services" />
-              <Tab className={classes.tab} component={Link} to="/about" label="About Us" />
-              <Tab className={classes.tab} component={Link} to="/contact" label="Contact" />
+              <Tab
+                className={classes.tab}
+                component={Link}
+                to="/"
+                label="Home" />
+              <Tab
+                aria-owns={anchorEl ? 'simple-menu' : undefined}
+                aria-haspopup={anchorEl ? 'true' : undefined}
+                className={classes.tab}
+                component={Link}
+                onMouseOver={( event ) => handlePopup( event )}
+                to="/services"
+                label="Services" />
+              {/* NOTE 팝업메뉴 적용 handlePopup */}
+              <Tab
+                className={classes.tab}
+                component={Link}
+                to="/revolution"
+                label="The Revolution" />
+              <Tab
+                className={classes.tab}
+                component={Link}
+                to="/about"
+                label="About Us" />
+              <Tab
+                className={classes.tab}
+                component={Link}
+                to="/contact"
+                label="Contact" />
             </Tabs>
             <Button variant="contained" color="secondary" className={classes.button}>
               Free Estimate
             </Button>
+            <Menu
+              id="simple-menu"
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              classes={{ paper: classes.menu }}
+              MenuListProps={{ onMouseLeave: handleClose }}
+              elevation={0}
+            >
+              {/* classes.menu에 대한 참조 ( https://v4.mui.com/api/menu/#css ) */}
+              <MenuItem
+                className={classes.menuItem}
+                component={Link}
+                onClick={() => {
+                  handleClose();
+                  setValue( 1 );
+                }}
+                to="services"
+                classes={{ root: classes.menuItem }}
+              >
+                Services
+              </MenuItem>
+              <MenuItem
+                component={Link}
+                onClick={() => {
+                  handleClose();
+                  setValue( 1 );
+                }}
+                to="customsoftware"
+                classes={{ root: classes.menuItem }}
+              >
+                Custom Software Development
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleClose();
+                  setValue( 1 );
+                }}
+                component={Link}
+                to="mobileapps"
+                classes={{ root: classes.menuItem }}
+              >
+                Moblie App Development
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleClose();
+                  setValue( 1 );
+                }}
+                component={Link}
+                to="websites"
+                classes={{ root: classes.menuItem }}
+              >
+                Websites Development
+              </MenuItem>
+              {/* NOTE link는 {Link} component를 사용한다. */}
 
+            </Menu>
           </Toolbar>
         </AppBar>
       </ElevationScroll>

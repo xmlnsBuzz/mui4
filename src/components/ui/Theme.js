@@ -10,7 +10,8 @@ export default createTheme( {
   palette: {
     common: {
       blue: `${siaBlue}`,
-      orange: `${siaOrange}`
+      orange: `${siaOrange}`,
+      subMenuBackgroundColor: '#fff',
     },
     primary: {
       main: `${siaBlue}`,
