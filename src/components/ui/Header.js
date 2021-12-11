@@ -89,9 +89,11 @@ export default function Header ( props ) {
   };/* NOTE 팝업메뉴 설정(handlePopup) */
 
   const handleMenuItemClick = ( e, i ) => {
-    setAnchorEl( null )
-    setOpen(false)
-  }
+    setAnchorEl( null );
+    setOpen( false );
+    setSelectedIndex( i );
+  };
+
   const handleClose = ( e ) => {
     setAnchorEl( null );
     setOpen( false );
@@ -99,11 +101,11 @@ export default function Header ( props ) {
 
   const menuOptions = [
     { name: "Services", link: "/services" },
-    {name: "Custom Software Development", link: "/customsoftware"},
-    {name: "Mobile Apps", link: "/mobileapps"},
-    {name: "WebSites Development", link: "/websites"},
-  ]
-/* NOTE 아래의 <MenuItem>을 단순화하기 위해 필요한 array */
+    { name: "Custom Software Development", link: "/customsoftware" },
+    { name: "Mobile Apps", link: "/mobileapps" },
+    { name: "WebSites Development", link: "/websites" },
+  ];
+  /* NOTE 아래의 <MenuItem>을 단순화하기 위해 필요한 array */
 
 
   useEffect( () => {
@@ -130,7 +132,62 @@ export default function Header ( props ) {
       ( window.location.pathname === "/estimate" && value !== 0 ) {
       setValue( 5 );
     }
-  } );
+    /* NOTE useEffect 개념 확보할 것 */
+    switch ( window.location.pathname ) {
+      case "/":
+        if ( value !== 0 ) {
+          setValue( 0 );
+        }
+        break;
+      case "/services":
+        if ( value !== 1 ) {
+          setValue( 1 );
+          setSelectedIndex( 0 );
+        }
+        break;
+      case "/customsoftware":
+        if ( value !== 1 ) {
+          setValue( 1 );
+          setSelectedIndex( 1 );
+        }
+        break;
+      case "/mobileapps":
+        if ( value !== 1 ) {
+          setValue( 1 );
+          setSelectedIndex( 2 );
+        }
+        break;
+      case "/websites":
+        if ( value !== 1 ) {
+          setValue( 1 );
+          setSelectedIndex( 3 );
+        }
+        break;
+      case "/revolution":
+        if ( value !== 2 ) {
+          setValue( 2 );
+        }
+        break;
+      case "/about":
+        if ( value !== 3 ) {
+          setValue( 3 );
+        }
+        break;
+      case "/contact":
+        if ( value !== 4 ) {
+          setValue( 4 );
+        }
+        break;
+      case "/estimate":
+        if ( value !== 5 ) {
+          setValue( 5 );
+        }
+        break;
+
+      default:
+        break;
+    }
+  }, [ value ] );
 
   return (
     <React.Fragment>
@@ -196,8 +253,10 @@ export default function Header ( props ) {
               MenuListProps={{ onMouseLeave: handleClose }}
               elevation={0}
             >
+              {/* NOTE 아래는 jsx에서 region 사용하는 방식 */}
+
               {/* classes.menu에 대한 참조 ( https://v4.mui.com/api/menu/#css ) */}
-              <MenuItem
+              {/*               <MenuItem
                 className={classes.menuItem}
                 component={Link}
                 onClick={() => {
@@ -241,9 +300,25 @@ export default function Header ( props ) {
                 classes={{ root: classes.menuItem }}
               >
                 Websites Development
-              </MenuItem>
-              {/* NOTE link는 {Link} component를 사용한다. */}
+              </MenuItem> */}
 
+              {/* NOTE link는 {Link} component를 사용한다. */}
+              {menuOptions.map( ( option, i ) => (
+                <MenuItem
+                  key={option}
+                  component={Link}
+                  to={option.link}
+                  classes={{ root: classes.menuItem }}
+                  onClick={( event ) => {
+                    handleMenuItemClick( event, i );
+                    setValue( 1 );
+                    handleClose();
+                  }}
+                  selected={i === setSelectedIndex && value === 1}
+                >
+                  {option.name}
+                </MenuItem>
+              ) )}
             </Menu>
           </Toolbar>
         </AppBar>
