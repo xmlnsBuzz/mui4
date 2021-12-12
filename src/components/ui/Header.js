@@ -9,6 +9,15 @@ import Button from '@material-ui/core/Button';
 import { Link } from 'react-router-dom';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { useTheme } from '@material-ui/core/styles';
+import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
+import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+
 // import theme from './Theme';
 
 
@@ -29,14 +38,26 @@ function ElevationScroll ( props ) {
 const useStyles = makeStyles( theme => ( {
   toolbarMargin: {
     ...theme.mixins.toolbar,
-    marginBottom: '3em'
+    marginBottom: '3em',
+    [ theme.breakpoints.down( 'md' ) ]: {
+      marginBottom: '2em'
+    },
+    [ theme.breakpoints.down( 'xs' ) ]: {
+      marginBottom: '1.25em'
+    }
   },
   logo: {
-    height: '8em'
+    height: '8em',
+    [ theme.breakpoints.down( 'md' ) ]: {
+      height: '7em' /* breakpoints에서의 media query */
+    },
+    [ theme.breakpoints.down( 'xs' ) ]: {
+      height: '5.5em'
+    }
   },
   logoContainer: {
     padding: 0,
-    "&:hover": {
+    '&:hover': {
       backgourndColor: 'transparent'
     }/* NOTE &:hover는 sass같은 것인지 확인 */
   },
@@ -65,38 +86,54 @@ const useStyles = makeStyles( theme => ( {
     ...theme.typography.tab,
     opacity: 0.5,
     // backgroundColor: 'blue',
-    "&:hover": {
+    '&:hover': {
       opacity: 1
     }/* NOTE JSS에서의 SASS nesting사용법 참조( https://crmrelease.tistory.com/89 ) */
+  },
+  drawerIcon: {
+    height: '50px',
+    width: '50px'
+  },
+  drawerIconContainer: {
+    marginLeft: 'auto',
+    '&:hover': {
+      backgroundColor: 'transparent'
+    }
   }
+  /* NOTE hover할 때 원이 transparent하게 보임 -> 없어짐 */
 } ) );
 
 export default function Header ( props ) {
   const classes = useStyles();
+  const theme = useTheme();
+  const iOS = process.browser && /iPad|iPhone|iPod/.test( navigator.userAgent );
+
+  const [ openDrawer, setOpenDrawer ] = useState( false );
+  const matches = useMediaQuery( theme.breakpoints.down( "md" ) );
   const [ value, setValue ] = useState( 0 );
   const [ anchorEl, setAnchorEl ] = useState( null );
-  const [ open, setOpen ] = useState( false );
+  const [ openMenu, setOpenMenu ] = useState( false );
   const [ selectedIndex, setSelectedIndex ] = useState( 0 );
 
-  const handleChange = ( e, value ) => {
-    setValue( value );
+  const handleChange = ( e, newValue ) => {
+    setValue( newValue );
     /* NOTE Click할 때 아래에 줄 생기게 만든다 */
   };
 
   const handlePopup = ( e ) => {
     setAnchorEl( e.currentTarget );
-    setOpen( true );
+    setOpenMenu( true );
   };/* NOTE 팝업메뉴 설정(handlePopup) */
 
   const handleMenuItemClick = ( e, i ) => {
     setAnchorEl( null );
-    setOpen( false );
+    setOpenMenu( false );
     setSelectedIndex( i );
   };
 
   const handleClose = ( e ) => {
     setAnchorEl( null );
-    setOpen( false );
+    setOpenMenu( false );
   };
 
   const menuOptions = [
@@ -107,6 +144,14 @@ export default function Header ( props ) {
   ];
   /* NOTE 아래의 <MenuItem>을 단순화하기 위해 필요한 array */
 
+  const drawerListItem = [
+    { name: "Home", link: "/" },
+    { name: "Services", link: "/services" },
+    { name: "The Revolution", link: "/revolution" },
+    { name: "About Us", link: "/about" },
+    { name: "Contact Us", link: "/contact" },
+    { name: "Free Estimate", link: "/estimate" },
+  ];
 
   useEffect( () => {
     if ( window.location.pathname === "/" && value !== 0 ) {
@@ -189,74 +234,63 @@ export default function Header ( props ) {
     }
   }, [ value ] );
 
-  return (
+  const tabs = (
     <React.Fragment>
-      <ElevationScroll>
-        <AppBar position="fixed" color="primary">
-          <Toolbar disableGutters>
-            <Button
-              component={Link}
-              to="/"
-              className={classes.logoContainer}
-              onClick={() => setValue( 0 )}
-              disableRipple
-            >
-              {/* NOTE disableRipple */}
-              <img alt="Com logo" src={logo} className={classes.logo} />
-            </Button>
+      <Tabs
+        value={value}
+        onChange={handleChange}
+        className={classes.tabContainer}
+        indicatorColor="primary"
+      >
+        <Tab
+          className={classes.tab}
+          component={Link}
+          to="/"
+          label="Home" />
+        <Tab
+          aria-owns={anchorEl ? 'simple-menu' : undefined}
+          aria-haspopup={anchorEl ? 'true' : undefined}
+          className={classes.tab}
+          component={Link}
+          onMouseOver={( event ) => handlePopup( event )}
+          to="/services"
+          label="Services" />
+        {/* NOTE 팝업메뉴 적용 handlePopup */}
+        <Tab
+          className={classes.tab}
+          component={Link}
+          to="/revolution"
+          label="The Revolution" />
+        <Tab
+          className={classes.tab}
+          component={Link}
+          to="/about"
+          label="About Us" />
+        <Tab
+          className={classes.tab}
+          component={Link}
+          to="/contact"
+          label="Contact" />
+      </Tabs>
+      <Button variant="contained" color="secondary" className={classes.button}>
+        Free Estimate
+      </Button>
+      <Menu
+        id="simple-menu"
+        anchorEl={anchorEl}
+        open={openMenu}
+        onClose={handleClose}
+        classes={{ paper: classes.menu }}
+        MenuListProps={{ onMouseLeave: handleClose }}
+        elevation={0}
+      >
+        {/* NOTE 아래는 jsx에서 region 사용하는 방식 */}
+        {
+          //#region //NOTE react jsx에서 region사용방식
+        }
 
-            <Tabs
-              value={value}
-              onChange={handleChange}
-              className={classes.tabContainer}
-              indicatorColor="primary"
-            >
-              <Tab
-                className={classes.tab}
-                component={Link}
-                to="/"
-                label="Home" />
-              <Tab
-                aria-owns={anchorEl ? 'simple-menu' : undefined}
-                aria-haspopup={anchorEl ? 'true' : undefined}
-                className={classes.tab}
-                component={Link}
-                onMouseOver={( event ) => handlePopup( event )}
-                to="/services"
-                label="Services" />
-              {/* NOTE 팝업메뉴 적용 handlePopup */}
-              <Tab
-                className={classes.tab}
-                component={Link}
-                to="/revolution"
-                label="The Revolution" />
-              <Tab
-                className={classes.tab}
-                component={Link}
-                to="/about"
-                label="About Us" />
-              <Tab
-                className={classes.tab}
-                component={Link}
-                to="/contact"
-                label="Contact" />
-            </Tabs>
-            <Button variant="contained" color="secondary" className={classes.button}>
-              Free Estimate
-            </Button>
-            <Menu
-              id="simple-menu"
-              anchorEl={anchorEl}
-              open={open}
-              onClose={handleClose}
-              classes={{ paper: classes.menu }}
-              MenuListProps={{ onMouseLeave: handleClose }}
-              elevation={0}
-            >
-              {/* NOTE 아래는 jsx에서 region 사용하는 방식 */}
-
-              {/* classes.menu에 대한 참조 ( https://v4.mui.com/api/menu/#css ) */}
-              {/*               <MenuItem
+        {/* classes.menu에 대한 참조 ( https://v4.mui.com/api/menu/#css ) */}
+        {/*               <MenuItem
                 className={classes.menuItem}
                 component={Link}
                 onClick={() => {
@@ -302,24 +336,119 @@ export default function Header ( props ) {
                 Websites Development
               </MenuItem> */}
 
-              {/* NOTE link는 {Link} component를 사용한다. */}
-              {menuOptions.map( ( option, i ) => (
-                <MenuItem
-                  key={option}
-                  component={Link}
-                  to={option.link}
-                  classes={{ root: classes.menuItem }}
-                  onClick={( event ) => {
-                    handleMenuItemClick( event, i );
-                    setValue( 1 );
-                    handleClose();
-                  }}
-                  selected={i === setSelectedIndex && value === 1}
-                >
-                  {option.name}
-                </MenuItem>
-              ) )}
-            </Menu>
+        {
+          //#endregion //NOTE react jsx에서 region사용방식
+        }
+
+        {/* NOTE link는 {Link} component를 사용한다. */}
+        {menuOptions.map( ( option, i ) => (
+          <MenuItem
+            key={option}
+            component={Link}
+            to={option.link}
+            classes={{ root: classes.menuItem }}
+            onClick={( event ) => {
+              handleMenuItemClick( event, i );
+              setValue( 1 );
+              handleClose();
+            }}
+            selected={i === setSelectedIndex && value === 1}
+          >
+            {option.name}
+          </MenuItem>
+        ) )}
+      </Menu>
+    </React.Fragment>
+  );
+
+
+  const drawer = (
+    <React.Fragment>
+      <SwipeableDrawer
+        disableBackdropTransition={!iOS}
+        disableDiscovery={iOS}
+        open={openDrawer}
+        onClose={() => setOpenDrawer( false )}
+        onOpen={() => setOpenDrawer( true )}
+      >
+        <List disablePadding>
+          {drawerListItem.map( ( listItem ) => (
+
+            <ListItem
+              divider
+              button
+              component={Link}
+              to={listItem.link}
+              onClick={()=>setOpenDrawer(false)}
+            >
+              <ListItemText
+                disableTypography
+              >
+                {listItem.name}
+              </ListItemText>
+            </ListItem>
+          ) )}
+          {/* map을 사용하여 <ListItem> 들을 스스로 단순화 시킴. I'm proud myself */}
+
+          {
+            //#region ListItem map
+          }
+          {/* <ListItem divider button component={Link} to="/services">
+            <ListItemText disableTypography>
+              Services
+            </ListItemText>
+          </ListItem>
+          <ListItem divider button component={Link} to="/revolution">
+            <ListItemText disableTypography>
+              The Revolution
+            </ListItemText>
+          </ListItem>
+          <ListItem divider button component={Link} to="/about">
+            <ListItemText disableTypography>
+              About Us
+            </ListItemText>
+          </ListItem>
+          <ListItem divider button component={Link} to="/contact">
+            <ListItemText disableTypography>
+              Contact Us
+            </ListItemText>
+          </ListItem>
+          <ListItem divider button component={Link} to="/estimate">
+            <ListItemText disableTypography>
+              Free Estimate
+            </ListItemText>
+          </ListItem> */}
+          {
+            //#endregion ListItem map
+          }
+        </List>
+      </SwipeableDrawer>
+      <IconButton
+        onClick={() => setOpenDrawer( !openDrawer )}
+        disableRipple
+        className={classes.drawerIconContainer}
+      >
+        <MenuIcon className={classes.drawerIcon} />
+      </IconButton>
+    </React.Fragment>
+  );
+  return (
+    <React.Fragment>
+      <ElevationScroll>
+        <AppBar position="fixed" color="primary">
+          <Toolbar disableGutters>
+            <Button
+              component={Link}
+              to="/"
+              className={classes.logoContainer}
+              onClick={() => setValue( 0 )}
+              disableRipple
+            >
+              {/* NOTE disableRipple */}
+              <img alt="Com logo" src={logo} className={classes.logo} />
+            </Button>
+            {matches ? drawer : tabs}
+
           </Toolbar>
         </AppBar>
       </ElevationScroll>
