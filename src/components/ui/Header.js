@@ -99,8 +99,22 @@ const useStyles = makeStyles( theme => ( {
     '&:hover': {
       backgroundColor: 'transparent'
     }
+    /* NOTE hover할 때 원이 transparent하게 보임 -> 없어짐 */
+  },
+  drawer: {
+    backgroundColor: theme.palette.common.blue
+  },
+  drawerItem: {
+    ...theme.typography.tab,
+    color: '#FFF',
+    opacity: 0.7
+  },
+  drawerItemSelected: {
+    opacity: 1
+  },
+  drawerItemEstimate: {
+    backgroundColor: theme.palette.common.orange
   }
-  /* NOTE hover할 때 원이 transparent하게 보임 -> 없어짐 */
 } ) );
 
 export default function Header ( props ) {
@@ -144,7 +158,7 @@ export default function Header ( props ) {
   ];
   /* NOTE 아래의 <MenuItem>을 단순화하기 위해 필요한 array */
 
-  const drawerListItem = [
+  const drawerRoutes = [
     { name: "Home", link: "/" },
     { name: "Services", link: "/services" },
     { name: "The Revolution", link: "/revolution" },
@@ -370,54 +384,149 @@ export default function Header ( props ) {
         open={openDrawer}
         onClose={() => setOpenDrawer( false )}
         onOpen={() => setOpenDrawer( true )}
+        classes={{ paper: classes.drawer }}
       >
         <List disablePadding>
-          {drawerListItem.map( ( listItem ) => (
+          {/* {drawerListItem.map( ( listItem ) => (
 
             <ListItem
               divider
               button
               component={Link}
               to={listItem.link}
-              onClick={()=>setOpenDrawer(false)}
+              onClick={() => setOpenDrawer( false )}
+              selected={value===0}
             >
               <ListItemText
                 disableTypography
+                className={classes.drawerItem}
               >
                 {listItem.name}
               </ListItemText>
             </ListItem>
-          ) )}
-          {/* map을 사용하여 <ListItem> 들을 스스로 단순화 시킴. I'm proud myself */}
+          ) )} */}
+          {/* map을 사용하여 <ListItem> 들을 스스로 단순화 시킴. I'm proud of myself */}
 
           {
             //#region ListItem map
           }
-          {/* <ListItem divider button component={Link} to="/services">
-            <ListItemText disableTypography>
+          <ListItem
+            onClick={() => { setOpenDrawer( false ); setValue( 0 ); }}
+            divider
+            button
+            component={Link}
+            to="/"
+            selected={value === 0}
+          >
+            <ListItemText
+              disableTypography
+              className={
+                value === 0
+                  ? [ classes.drawerItem, classes.drawerItemSelected ]
+                  : classes.drawerItem
+              }
+            >
+              Home
+            </ListItemText>
+          </ListItem>
+          <ListItem
+            onClick={() => { setOpenDrawer( false ); setValue( 1 ); }}
+            divider
+            button
+            component={Link}
+            to="/services"
+            selected={value === 1}
+          >
+            {/* NOTE setOpenDrawer(false)를 빼면 클릭한 후에도 drawer가 닫히지 않는다. */}
+            <ListItemText
+              disableTypography
+              className={
+                value === 1
+                  ? [ classes.drawerItem, classes.drawerItemSelected ]
+                  : classes.drawerItem
+              }
+            >
               Services
             </ListItemText>
           </ListItem>
-          <ListItem divider button component={Link} to="/revolution">
-            <ListItemText disableTypography>
+          <ListItem
+            onClick={() => { setOpenDrawer( false ); setValue( 2 ); }}
+            divider
+            button
+            component={Link}
+            to="/revolution"
+            selected={value === 2}
+          >
+            <ListItemText
+              disableTypography
+              className={
+                value === 2
+                  ? [ classes.drawerItem, classes.drawerItemSelected ]
+                  : classes.drawerItem
+
+              }
+            >
               The Revolution
             </ListItemText>
           </ListItem>
-          <ListItem divider button component={Link} to="/about">
-            <ListItemText disableTypography>
+          <ListItem
+            onClick={() => { setOpenDrawer( false ); setValue( 3 ); }}
+            divider
+            button
+            component={Link}
+            to="/about"
+            selected={value === 3}>
+            <ListItemText
+              disableTypography
+              className={
+                value === 3
+                  ? [ classes.drawerItem, classes.drawerItemSelected ]
+                  : classes.drawerItem
+
+              }
+            >
               About Us
             </ListItemText>
           </ListItem>
-          <ListItem divider button component={Link} to="/contact">
-            <ListItemText disableTypography>
+          <ListItem
+            onClick={() => { setOpenDrawer( false ); setValue( 4 ); }}
+            divider
+            button
+            component={Link}
+            to="/contact"
+            selected={value === 4}>
+            <ListItemText
+              disableTypography
+              className={
+                value === 4
+                  ? [ classes.drawerItem, classes.drawerItemSelected ]
+                  : classes.drawerItem
+
+              }
+            >
               Contact Us
             </ListItemText>
           </ListItem>
-          <ListItem divider button component={Link} to="/estimate">
-            <ListItemText disableTypography>
+          <ListItem
+            onClick={() => { setOpenDrawer( false ); setValue( 5 ); }}
+            divider
+            button
+            component={Link}
+            to="/estimate"
+            selected={value === 5}
+            className={classes.drawerItemEstimate}
+          >
+            <ListItemText
+              disableTypography
+              className={
+                value === 5
+                  ? [ classes.drawerItem, classes.drawerItemSelected ]
+                  : classes.drawerItem
+
+              }>
               Free Estimate
             </ListItemText>
-          </ListItem> */}
+          </ListItem>
           {
             //#endregion ListItem map
           }

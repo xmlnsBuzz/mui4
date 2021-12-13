@@ -27,7 +27,7 @@ export default createTheme( {
     tab: {
       fontFamily: 'Roboto',
       textTransform: 'none',
-      color: '#ffffff',
+      color: '#FFF',
       fontWeight: '700',
       fontSize: '1rem',
     },
