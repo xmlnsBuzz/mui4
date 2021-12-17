@@ -1,15 +1,10 @@
 # NOTE
 
-## react-router-dom을 설치하고 나면 vulnerabilities 들이 생김
-ex: 
-added 3 packages, and audited 1960 packages in 4s
+## useMemo와 useCallback에 대한 NOTE 참조
+https://www.youtube.com/watch?v=uBmnf_k7_r0&ab_channel=%EA%B0%9C%EB%B0%9C%ED%99%94%EB%9D%BC%EB%A6%ACHwarang
 
-154 packages are looking for funding
-  run `npm fund` for details
+## position: 'relative' NOTE 참조
 
-27 vulnerabilities (16 moderate, 9 high, 2 critical)
+## --dev 옵션 도태됨... 대신 `--include=dev`를 사용할 것.
 
-To address all issues (including breaking changes), run:
-  npm audit fix --force
-
-Run `npm audit` for details.
+## <!-- NOTE  --> Theme에 지정된 Typography는 공통적인 사항을 토대로 나머지 CSS properties는 개별 파일들에 각각 지정한다. 

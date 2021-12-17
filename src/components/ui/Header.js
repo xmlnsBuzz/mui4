@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import useScrollTrigger from '@material-ui/core/useScrollTrigger';
@@ -23,8 +23,10 @@ import ListItemText from '@material-ui/core/ListItemText';
 
 
 import logo from '../../assets/logo.svg';
+// import { RouterOutlined } from "@material-ui/icons";
 function ElevationScroll ( props ) {
   const { children } = props;
+
   const trigger = useScrollTrigger( {
     disableHysteresis: true,
     threshold: 0,
@@ -62,7 +64,8 @@ const useStyles = makeStyles( theme => ( {
     }/* NOTE &:hover는 sass같은 것인지 확인 */
   },
   tabContainer: {
-    marginLeft: 'auto'
+    marginLeft: 'auto',
+    backgourndColor: theme.palette.common.blue,
     /* NOTE 메뉴버튼들 우측정렬 안 됨. V4에서는 됨. 해결 됨.*/
   },
   tab: {
@@ -76,6 +79,9 @@ const useStyles = makeStyles( theme => ( {
     marginLeft: '50px',
     marginRight: '25px',
     height: '45px',
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.light
+    }
   },
   menu: {
     backgroundColor: theme.palette.common.orange,
@@ -84,207 +90,171 @@ const useStyles = makeStyles( theme => ( {
   },
   menuItem: {
     ...theme.typography.tab,
-    opacity: 0.5,
-    // backgroundColor: 'blue',
+    opacity: 0.7,
+    backgroundColor: theme.palette.common.orange,
     '&:hover': {
-      opacity: 1
+      opacity: 1,
     }/* NOTE JSS에서의 SASS nesting사용법 참조( https://crmrelease.tistory.com/89 ) */
   },
   drawerIcon: {
     height: '50px',
-    width: '50px'
+    width: '50px',
+    color: theme.palette.common.orange
   },
   drawerIconContainer: {
     marginLeft: 'auto',
     '&:hover': {
-      backgroundColor: 'transparent'
+      backgroundColor: 'transparent',
     }
     /* NOTE hover할 때 원이 transparent하게 보임 -> 없어짐 */
   },
   drawer: {
-    backgroundColor: theme.palette.common.blue
+    backgroundColor: theme.palette.common.blue,
+
   },
   drawerItem: {
     ...theme.typography.tab,
     color: '#FFF',
-    opacity: 0.7
-  },
-  drawerItemSelected: {
-    opacity: 1
+    opacity: 0.7,
   },
   drawerItemEstimate: {
     backgroundColor: theme.palette.common.orange
+  },
+  drawerItemSelected: {
+    '& .MuiListItemText-root': {
+      opacity: 1,
+    }
+  },
+  appbar: {
+    zIndex: theme.zIndex.modal + 1
   }
+
 } ) );
 
 export default function Header ( props ) {
+  /* NOTE PROPS 공부하려 개념 익힐 것 */
   const classes = useStyles();
   const theme = useTheme();
   const iOS = process.browser && /iPad|iPhone|iPod/.test( navigator.userAgent );
 
   const [ openDrawer, setOpenDrawer ] = useState( false );
   const matches = useMediaQuery( theme.breakpoints.down( "md" ) );
-  const [ value, setValue ] = useState( 0 );
+  /* NOTE mediaQuery사용할 때 들어가는 라인 */
+  // const [ value, setValue ] = useState( 0 );
   const [ anchorEl, setAnchorEl ] = useState( null );
-  const [ openMenu, setOpenMenu ] = useState( false );
-  const [ selectedIndex, setSelectedIndex ] = useState( 0 );
+  const [ open, setOpen ] = useState( false );
 
   const handleChange = ( e, newValue ) => {
-    setValue( newValue );
-    /* NOTE Click할 때 아래에 줄 생기게 만든다 */
-  };
+    props.setValue( newValue );
+  } ;
+  /* NOTE Click할 때 아래에 줄 생기게 만든다 */
+  /* NOTE useCallback */
 
-  const handlePopup = ( e ) => {
+  const handleClick = useCallback( e => {
     setAnchorEl( e.currentTarget );
-    setOpenMenu( true );
-  };/* NOTE 팝업메뉴 설정(handlePopup) */
+    setOpen( true );
+  }, [] );
+  /* NOTE 팝업메뉴 설정(handleClick) */
+  /* NOTE useCallback */
 
   const handleMenuItemClick = ( e, i ) => {
     setAnchorEl( null );
-    setOpenMenu( false );
-    setSelectedIndex( i );
+    setOpen( false );
+    props.setSelectedIndex( i );
   };
 
   const handleClose = ( e ) => {
     setAnchorEl( null );
-    setOpenMenu( false );
+    setOpen( false );
   };
 
-  const menuOptions = [
-    { name: "Services", link: "/services" },
-    { name: "Custom Software Development", link: "/customsoftware" },
-    { name: "Mobile Apps", link: "/mobileapps" },
-    { name: "WebSites Development", link: "/websites" },
-  ];
+  const menuOptions = useMemo( () => [
+    {
+      name: "Services",
+      link: "/services",
+      activeIndex: 1,
+      selectedIndex: 0
+    },
+    {
+      name: "Custom Software Development",
+      link: "/customsoftware",
+      activeIndex: 1,
+      selectedIndex: 1
+    },
+    {
+      name: "iOS/Android Apps Development",
+      link: "/mobileapps",
+      activeIndex: 1,
+      selectedIndex: 2
+    },
+    {
+      name: "WebSites Development",
+      link: "/websites",
+      activeIndex: 1,
+      selectedIndex: 3
+    }
+  ], [] );
   /* NOTE 아래의 <MenuItem>을 단순화하기 위해 필요한 array */
+  /* NOTE useMemo */
 
-  const drawerRoutes = [
-    { name: "Home", link: "/" },
-    { name: "Services", link: "/services" },
-    { name: "The Revolution", link: "/revolution" },
-    { name: "About Us", link: "/about" },
-    { name: "Contact Us", link: "/contact" },
-    { name: "Free Estimate", link: "/estimate" },
-  ];
+  const routes = useMemo( () => [
+    { name: "Home", link: "/", activeIndex: 0 },
+    {
+      name: "Services",
+      link: "/services",
+      activeIndex: 1,
+      ariaOwns: anchorEl ? 'simple-menu' : undefined,
+      ariaPopup: anchorEl ? 'true' : undefined,
+      mouseOver: event => handleClick( event )
+    },
+    { name: "The Revolution", link: "/revolution", activeIndex: 2 },
+    { name: "About Us", link: "/about", activeIndex: 3 },
+    { name: "Contact Us", link: "/contact", activeIndex: 4 },
+  ], [ anchorEl, handleClick ] );
 
   useEffect( () => {
-    if ( window.location.pathname === "/" && value !== 0 ) {
-      setValue( 0 );
-    }
-    else if
-      ( window.location.pathname === "/services" && value !== 0 ) {
-      setValue( 1 );
-    }
-    else if
-      ( window.location.pathname === "/revolution" && value !== 0 ) {
-      setValue( 2 );
-    }
-    else if
-      ( window.location.pathname === "/about" && value !== 0 ) {
-      setValue( 3 );
-    }
-    else if
-      ( window.location.pathname === "/contact" && value !== 0 ) {
-      setValue( 4 );
-    }
-    else if
-      ( window.location.pathname === "/estimate" && value !== 0 ) {
-      setValue( 5 );
-    }
-    /* NOTE useEffect 개념 확보할 것 */
-    switch ( window.location.pathname ) {
-      case "/":
-        if ( value !== 0 ) {
-          setValue( 0 );
-        }
-        break;
-      case "/services":
-        if ( value !== 1 ) {
-          setValue( 1 );
-          setSelectedIndex( 0 );
-        }
-        break;
-      case "/customsoftware":
-        if ( value !== 1 ) {
-          setValue( 1 );
-          setSelectedIndex( 1 );
-        }
-        break;
-      case "/mobileapps":
-        if ( value !== 1 ) {
-          setValue( 1 );
-          setSelectedIndex( 2 );
-        }
-        break;
-      case "/websites":
-        if ( value !== 1 ) {
-          setValue( 1 );
-          setSelectedIndex( 3 );
-        }
-        break;
-      case "/revolution":
-        if ( value !== 2 ) {
-          setValue( 2 );
-        }
-        break;
-      case "/about":
-        if ( value !== 3 ) {
-          setValue( 3 );
-        }
-        break;
-      case "/contact":
-        if ( value !== 4 ) {
-          setValue( 4 );
-        }
-        break;
-      case "/estimate":
-        if ( value !== 5 ) {
-          setValue( 5 );
-        }
-        break;
-
-      default:
-        break;
-    }
-  }, [ value ] );
+    [ ...menuOptions, ...routes ].forEach( route => {
+      switch ( window.location.pathname ) {
+        case `${route.link}`:
+          if ( props.value !== route.activeIndex ) {
+            props.setValue( route.activeIndex );
+            if ( route.selectedIndex && route.selectedIndex !== props.selectedIndex ) {
+              props.setSelectedIndex( route.selectedIndex );
+            }
+          }
+          break;
+        default:
+          break;
+      }
+    } );
+  }, [ props.value, menuOptions, props.selectedIndex, routes, props ] );
+  /* NOTE useEffect, forEach 개념 확보할 것 */
+  /* NOTE useMemo */
 
   const tabs = (
     <React.Fragment>
       <Tabs
-        value={value}
+        value={props.value}
         onChange={handleChange}
         className={classes.tabContainer}
         indicatorColor="primary"
       >
-        <Tab
-          className={classes.tab}
-          component={Link}
-          to="/"
-          label="Home" />
-        <Tab
-          aria-owns={anchorEl ? 'simple-menu' : undefined}
-          aria-haspopup={anchorEl ? 'true' : undefined}
-          className={classes.tab}
-          component={Link}
-          onMouseOver={( event ) => handlePopup( event )}
-          to="/services"
-          label="Services" />
-        {/* NOTE 팝업메뉴 적용 handlePopup */}
-        <Tab
-          className={classes.tab}
-          component={Link}
-          to="/revolution"
-          label="The Revolution" />
-        <Tab
-          className={classes.tab}
-          component={Link}
-          to="/about"
-          label="About Us" />
-        <Tab
-          className={classes.tab}
-          component={Link}
-          to="/contact"
-          label="Contact" />
+        {/* NOTE error 아래를 routes.map 다음에 '='을 넣었음  */}
+        {/* NOTE '=' 하나 잘 못 집어 넣었을 뿐인데...ㅜㅜ */}
+        {routes.map( ( route, index ) => (
+          <Tab
+            key={`${route}${index}`}
+            className={classes.tab}
+            component={Link}
+            to={route.link}
+            label={route.name}
+            aria-owns={route.ariaOwns}
+            aria-haspopup={route.ariaPopup}
+            onMouseOver={route.mouseOver}
+          />
+        ) )}
+        {/* NOTE onMouseOver를 mouseOver로 해서 에러났음...ㅜㅜ */}
+
       </Tabs>
       <Button variant="contained" color="secondary" className={classes.button}>
         Free Estimate
@@ -292,81 +262,28 @@ export default function Header ( props ) {
       <Menu
         id="simple-menu"
         anchorEl={anchorEl}
-        open={openMenu}
+        open={open}
         onClose={handleClose}
         classes={{ paper: classes.menu }}
         MenuListProps={{ onMouseLeave: handleClose }}
         elevation={0}
+        style={{ zIndex: 1302 }}
+        keepMounted
       >
-        {/* NOTE 아래는 jsx에서 region 사용하는 방식 */}
-        {
-          //#region //NOTE react jsx에서 region사용방식
-        }
-
-        {/* classes.menu에 대한 참조 ( https://v4.mui.com/api/menu/#css ) */}
-        {/*               <MenuItem
-                className={classes.menuItem}
-                component={Link}
-                onClick={() => {
-                  handleClose();
-                  setValue( 1 );
-                }}
-                to="services"
-                classes={{ root: classes.menuItem }}
-              >
-                Services
-              </MenuItem>
-              <MenuItem
-                component={Link}
-                onClick={() => {
-                  handleClose();
-                  setValue( 1 );
-                }}
-                to="customsoftware"
-                classes={{ root: classes.menuItem }}
-              >
-                Custom Software Development
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  handleClose();
-                  setValue( 1 );
-                }}
-                component={Link}
-                to="mobileapps"
-                classes={{ root: classes.menuItem }}
-              >
-                Moblie App Development
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  handleClose();
-                  setValue( 1 );
-                }}
-                component={Link}
-                to="websites"
-                classes={{ root: classes.menuItem }}
-              >
-                Websites Development
-              </MenuItem> */}
-
-        {
-          //#endregion //NOTE react jsx에서 region사용방식
-        }
-
+        {/* NOTE style={{zIndex: 1302}}는 menu의 z-index를 appbar보도 위로 올려준다. */}
         {/* NOTE link는 {Link} component를 사용한다. */}
         {menuOptions.map( ( option, i ) => (
           <MenuItem
-            key={option}
+            key={`${option}${i}`}
             component={Link}
             to={option.link}
             classes={{ root: classes.menuItem }}
             onClick={( event ) => {
               handleMenuItemClick( event, i );
-              setValue( 1 );
+              props.setValue( 1 );
               handleClose();
             }}
-            selected={i === setSelectedIndex && value === 1}
+            selected={i === props.setSelectedIndex && props.value === 1}
           >
             {option.name}
           </MenuItem>
@@ -386,152 +303,56 @@ export default function Header ( props ) {
         onOpen={() => setOpenDrawer( true )}
         classes={{ paper: classes.drawer }}
       >
+        <div className={classes.toolbarMargin} />
         <List disablePadding>
-          {/* {drawerListItem.map( ( listItem ) => (
-
+          {routes.map( route => (
             <ListItem
+              key={`${route}${route.activeIndex}`}
               divider
               button
               component={Link}
-              to={listItem.link}
-              onClick={() => setOpenDrawer( false )}
-              selected={value===0}
+              to={route.link}
+              selected={props.value === route.activeIndex}
+              classes={{ selected: classes.drawerItemSelected }}
+              onClick={() => {
+                setOpenDrawer( false );
+                props.setValue( route.activeIndex );
+              }}
             >
               <ListItemText
                 disableTypography
                 className={classes.drawerItem}
               >
-                {listItem.name}
+                {route.name}
               </ListItemText>
             </ListItem>
-          ) )} */}
-          {/* map을 사용하여 <ListItem> 들을 스스로 단순화 시킴. I'm proud of myself */}
+          ) )}
 
-          {
-            //#region ListItem map
-          }
           <ListItem
-            onClick={() => { setOpenDrawer( false ); setValue( 0 ); }}
+            onClick={() => {
+              setOpenDrawer( false );
+              props.setValue( 5 );
+            }}
             divider
             button
             component={Link}
-            to="/"
-            selected={value === 0}
-          >
-            <ListItemText
-              disableTypography
-              className={
-                value === 0
-                  ? [ classes.drawerItem, classes.drawerItemSelected ]
-                  : classes.drawerItem
-              }
-            >
-              Home
-            </ListItemText>
-          </ListItem>
-          <ListItem
-            onClick={() => { setOpenDrawer( false ); setValue( 1 ); }}
-            divider
-            button
-            component={Link}
-            to="/services"
-            selected={value === 1}
-          >
-            {/* NOTE setOpenDrawer(false)를 빼면 클릭한 후에도 drawer가 닫히지 않는다. */}
-            <ListItemText
-              disableTypography
-              className={
-                value === 1
-                  ? [ classes.drawerItem, classes.drawerItemSelected ]
-                  : classes.drawerItem
-              }
-            >
-              Services
-            </ListItemText>
-          </ListItem>
-          <ListItem
-            onClick={() => { setOpenDrawer( false ); setValue( 2 ); }}
-            divider
-            button
-            component={Link}
-            to="/revolution"
-            selected={value === 2}
-          >
-            <ListItemText
-              disableTypography
-              className={
-                value === 2
-                  ? [ classes.drawerItem, classes.drawerItemSelected ]
-                  : classes.drawerItem
-
-              }
-            >
-              The Revolution
-            </ListItemText>
-          </ListItem>
-          <ListItem
-            onClick={() => { setOpenDrawer( false ); setValue( 3 ); }}
-            divider
-            button
-            component={Link}
-            to="/about"
-            selected={value === 3}>
-            <ListItemText
-              disableTypography
-              className={
-                value === 3
-                  ? [ classes.drawerItem, classes.drawerItemSelected ]
-                  : classes.drawerItem
-
-              }
-            >
-              About Us
-            </ListItemText>
-          </ListItem>
-          <ListItem
-            onClick={() => { setOpenDrawer( false ); setValue( 4 ); }}
-            divider
-            button
-            component={Link}
-            to="/contact"
-            selected={value === 4}>
-            <ListItemText
-              disableTypography
-              className={
-                value === 4
-                  ? [ classes.drawerItem, classes.drawerItemSelected ]
-                  : classes.drawerItem
-
-              }
-            >
-              Contact Us
-            </ListItemText>
-          </ListItem>
-          <ListItem
-            onClick={() => { setOpenDrawer( false ); setValue( 5 ); }}
-            divider
-            button
-            component={Link}
+            classes={{
+              root: classes.drawerItemEstimate,
+              selected: classes.drawerItemSelected
+            }}
             to="/estimate"
-            selected={value === 5}
-            className={classes.drawerItemEstimate}
+            selected={props.value === 5}
           >
             <ListItemText
               disableTypography
-              className={
-                value === 5
-                  ? [ classes.drawerItem, classes.drawerItemSelected ]
-                  : classes.drawerItem
-
-              }>
+              className={classes.drawerItem}
+            >
               Free Estimate
             </ListItemText>
           </ListItem>
-          {
-            //#endregion ListItem map
-          }
         </List>
       </SwipeableDrawer>
+      {/* NOTE 아래는 햄버거 아이콘 */}
       <IconButton
         onClick={() => setOpenDrawer( !openDrawer )}
         disableRipple
@@ -544,13 +365,13 @@ export default function Header ( props ) {
   return (
     <React.Fragment>
       <ElevationScroll>
-        <AppBar position="fixed" color="primary">
+        <AppBar position="fixed" className={classes.appbar}>
           <Toolbar disableGutters>
             <Button
               component={Link}
               to="/"
               className={classes.logoContainer}
-              onClick={() => setValue( 0 )}
+              onClick={() => props.setValue( 0 )}
               disableRipple
             >
               {/* NOTE disableRipple */}
